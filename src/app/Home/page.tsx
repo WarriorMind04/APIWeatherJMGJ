@@ -2,9 +2,17 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@mui/material";
 import { Grid } from "@mui/material";
-
-const cities = ["Mexico City", "Guadalajara", "Monterrey", "Cancun", "Tijuana"];
-const API_KEY = "TU_API_KEY"; // Reemplázalo con tu clave de OpenWeatherMap
+import Menu from "../components/menu";
+const cities = [
+  "Mexico City",
+  "Guadalajara",
+  "Monterrey",
+  "Cancun",
+  "Tijuana",
+  "Aguascalientes",
+  "Queretaro",
+];
+const API_KEY = "6c07aaad6ea7bd289b984d815797bca2";
 
 interface WeatherInfo {
   main?: { temp: number };
@@ -37,25 +45,28 @@ const WeatherGrid = () => {
   }, []);
 
   return (
-    <Grid container spacing={2} justifyContent="center">
-      {cities.map((city) => (
-        <Grid item key={city} xs={12} sm={6} md={4} lg={3}>
-          <Card className="p-4 shadow-lg">
-            <CardContent>
-              <h2 className="text-xl font-bold">{city}</h2>
-              {weatherData[city] && weatherData[city].main ? (
-                <>
-                  <p>Temperatura: {weatherData[city].main?.temp}°C</p>
-                  <p>Clima: {weatherData[city].weather?.[0]?.description}</p>
-                </>
-              ) : (
-                <p>Cargando o datos no disponibles</p>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
+    <>
+      <Menu />
+      <Grid container spacing={2} justifyContent="center">
+        {cities.map((city) => (
+          <Grid item key={city} xs={12} sm={6} md={4} lg={3}>
+            <Card className="p-4 shadow-lg">
+              <CardContent>
+                <h2 className="text-xl font-bold">{city}</h2>
+                {weatherData[city] && weatherData[city].main ? (
+                  <>
+                    <p>Temperatura: {weatherData[city].main?.temp}°C</p>
+                    <p>Clima: {weatherData[city].weather?.[0]?.description}</p>
+                  </>
+                ) : (
+                  <p>Cargando o datos no disponibles</p>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </>
   );
 };
 
