@@ -1,62 +1,72 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "@mui/material";
-import { Grid } from "@mui/material";
-import Menu from "../components/menu";
-const cities = [
-  "Mexico City",
-  "Guadalajara",
-  "Monterrey",
-  "Cancun",
-  "Tijuana",
-  "Aguascalientes",
-  "Queretaro",
-];
-const API_KEY = "6c07aaad6ea7bd289b984d815797bca2";
+import React, { useState } from "react";
+import { TextField, Grid, Card, CardContent } from "@mui/material";
+
+const API_KEY = "66a0e67532aa43c8bd6222252250403"; // Reemplázalo con tu clave de WeatherAPI
 
 interface WeatherInfo {
-  main?: { temp: number };
-  weather?: { description: string }[];
+  location?: { name: string; country: string };
+  current?: { temp_c: number; condition: { text: string } };
 }
 
-const WeatherGrid = () => {
+const WeatherSearch = () => {
+  const [searchTerm, setSearchTerm] = useState("");
   const [weatherData, setWeatherData] = useState<Record<string, WeatherInfo>>(
     {}
   );
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
 
-  useEffect(() => {
-    const fetchWeather = async () => {
-      const data: Record<string, WeatherInfo> = {};
-      for (const city of cities) {
-        try {
-          const response = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?q=${city},MX&appid=${API_KEY}&units=metric`
-          );
-          const result = await response.json();
-          data[city] = result;
-        } catch (error) {
-          console.error("Error fetching weather data:", error);
-        }
+  // Función para buscar clima de una ciudad
+  const fetchWeather = async (city: string) => {
+    try {
+      const response = await fetch(
+        `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${city}&aqi=no`
+      );
+      const result = await response.json();
+      if (result.location) {
+        setWeatherData((prev) => ({ ...prev, [city]: result }));
+        setSelectedCities((prev) => [...new Set([...prev, city])]);
       }
-      setWeatherData(data);
-    };
-
-    fetchWeather();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  };
 
   return (
-    <>
-      <Menu />
-      <Grid container spacing={2} justifyContent="center">
-        {cities.map((city) => (
+    <div style={{ padding: "20px" }}>
+      {/* Buscador */}
+      <TextField
+        label="Buscar ciudad"
+        variant="outlined"
+        fullWidth
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && searchTerm.trim()) {
+            fetchWeather(searchTerm.trim());
+            setSearchTerm("");
+          }
+        }}
+      />
+
+      {/* Grid con las ciudades agregadas y su clima */}
+      <Grid
+        container
+        spacing={2}
+        justifyContent="center"
+        style={{ marginTop: "20px" }}
+      >
+        {selectedCities.map((city) => (
           <Grid item key={city} xs={12} sm={6} md={4} lg={3}>
             <Card className="p-4 shadow-lg">
               <CardContent>
-                <h2 className="text-xl font-bold">{city}</h2>
-                {weatherData[city] && weatherData[city].main ? (
+                <h2 className="text-xl font-bold">
+                  {weatherData[city]?.location?.name}
+                </h2>
+                {weatherData[city] && weatherData[city].current ? (
                   <>
-                    <p>Temperatura: {weatherData[city].main?.temp}°C</p>
-                    <p>Clima: {weatherData[city].weather?.[0]?.description}</p>
+                    <p>Temperatura: {weatherData[city].current.temp_c}°C</p>
+                    <p>Clima: {weatherData[city].current.condition.text}</p>
                   </>
                 ) : (
                   <p>Cargando o datos no disponibles</p>
@@ -66,8 +76,8 @@ const WeatherGrid = () => {
           </Grid>
         ))}
       </Grid>
-    </>
+    </div>
   );
 };
 
-export default WeatherGrid;
+export default WeatherSearch;
